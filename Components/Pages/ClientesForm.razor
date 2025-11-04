@@ -1,0 +1,90 @@
+﻿@page "/agregar-cliente/{dniEntrenador}"
+@rendermode InteractiveServer
+@using ProyectoGym.Domain
+@inject NavigationManager Navigation
+@inject ProyectoGym.Business.ClienteService ClienteService
+
+<h3>Agregar Cliente</h3>
+
+<div class="card p-4 shadow-sm" style="max-width: 600px;">
+    <EditForm Model="@nuevoCliente" OnValidSubmit="AgregarCliente" FormName="client">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label>Nombre</label>
+            <InputText @bind-Value="nuevoCliente.nombre" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label>Apellido</label>
+            <InputText @bind-Value="nuevoCliente.apellido" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label>DNI</label>
+            <InputText @bind-Value="nuevoCliente.dni" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label>Dirección</label>
+            <InputText @bind-Value="nuevoCliente.direccion" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label>Teléfono</label>
+            <InputText @bind-Value="nuevoCliente.telefono" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label>Email</label>
+            <InputText @bind-Value="nuevoCliente.email" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label>Género</label>
+            <InputSelect @bind-Value="nuevoCliente.genero" class="form-control">
+                @foreach (var genero in Enum.GetValues(typeof(Sexo)))
+                {
+                    <option value="@genero">@genero</option>
+                }
+            </InputSelect>
+        </div>
+
+        <div class="mb-3 form-check">
+            <InputCheckbox @bind-Value="nuevoCliente.pago" class="form-check-input" />
+            <label class="form-check-label">Pago realizado</label>
+        </div>
+
+        <div class="d-flex justify-content-between mt-4">
+            <button type="submit" class="btn btn-primary">Guardar</button>
+            <button type="button" class="btn btn-secondary" @onclick="Volver">Cancelar</button>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    [Parameter]
+    public string dniEntrenador { get; set; } = string.Empty;
+
+    private Cliente nuevoCliente = new Cliente();
+
+    private void AgregarCliente()
+    {
+        try
+        {
+            nuevoCliente.rutinaxdia = new List<Rutina>();
+            ClienteService.CrearCliente(nuevoCliente);
+            Navigation.NavigateTo($"/dashboard-entrenador/{dniEntrenador}", forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al agregar cliente: {ex.Message}");
+        }
+    }
+
+    private void Volver()
+    {
+        Navigation.NavigateTo($"/dashboard-entrenador/{dniEntrenador}", forceLoad: true);
+    }
+}

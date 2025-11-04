@@ -1,0 +1,102 @@
+﻿@page "/editar-cliente/{dniCliente}/{dniEntrenador}"
+@rendermode InteractiveServer
+@using ProyectoGym.Domain
+@inject NavigationManager Navigation
+@inject ProyectoGym.Business.ClienteService ClienteService
+
+<h3>Editar Cliente</h3>
+
+@if (cliente == null)
+{
+    <div class="alert alert-warning">No se encontró el cliente.</div>
+}
+else
+{
+    <div class="card p-4 shadow-sm" style="max-width: 600px;">
+        <EditForm Model="@cliente" OnValidSubmit="GuardarCambios">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="mb-3">
+                <label>Nombre</label>
+                <InputText @bind-Value="cliente.nombre" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label>Apellido</label>
+                <InputText @bind-Value="cliente.apellido" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label>DNI</label>
+                <InputText @bind-Value="cliente.dni" class="form-control" disabled />
+            </div>
+
+            <div class="mb-3">
+                <label>Dirección</label>
+                <InputText @bind-Value="cliente.direccion" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label>Teléfono</label>
+                <InputText @bind-Value="cliente.telefono" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label>Email</label>
+                <InputText @bind-Value="cliente.email" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label>Género</label>
+                <InputSelect @bind-Value="cliente.genero" class="form-control">
+                    @foreach (var genero in Enum.GetValues(typeof(Sexo)))
+                    {
+                        <option value="@genero">@genero</option>
+                    }
+                </InputSelect>
+            </div>
+
+            <div class="mb-3 form-check">
+                <InputCheckbox @bind-Value="cliente.pago" class="form-check-input" />
+                <label class="form-check-label">Pago realizado</label>
+            </div>
+
+            <div class="d-flex justify-content-between mt-4">
+                <button type="submit" class="btn btn-primary">Guardar</button>
+                <button type="button" class="btn btn-secondary" @onclick="Volver">Cancelar</button>
+            </div>
+        </EditForm>
+    </div>
+}
+
+@code {
+    [Parameter] public string dniCliente { get; set; } = string.Empty;
+    [Parameter] public string dniEntrenador { get; set; } = string.Empty;
+
+    private Cliente? cliente;
+
+    protected override void OnParametersSet()
+    {
+        cliente = ClienteService.TraerTodos().FirstOrDefault(c => c.dni == dniCliente);
+    }
+
+    private void GuardarCambios()
+    {
+        try
+        {
+            ClienteService.ModificarCliente(cliente);
+            Navigation.NavigateTo($"/dashboard-entrenador/{dniEntrenador}", forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al guardar cambios: {ex.Message}");
+        }
+    }
+
+    private void Volver()
+    {
+        Navigation.NavigateTo($"/dashboard-entrenador/{dniEntrenador}", forceLoad: true);
+    }
+}
+

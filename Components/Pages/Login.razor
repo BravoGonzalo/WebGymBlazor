@@ -1,0 +1,81 @@
+﻿@page "/login"
+@rendermode InteractiveServer
+@inject NavigationManager Nav
+@inject ProyectoGym.Business.EntrenadorService EntrenadorService
+@inject ProyectoGym.Business.ClienteService ClienteService
+@using ProyectoGym.Domain
+@using System.ComponentModel.DataAnnotations
+
+<div class="d-flex justify-content-center align-items-center vh-100 bg-light">
+    <div class="card shadow-lg p-4" style="width: 400px; border-radius: 1rem;">
+        <h3 class="text-center mb-4 text-primary">Inicio de sesión</h3>
+
+        <EditForm Model="@loginModel" OnValidSubmit="@HandleLogin" FormName="Login">
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger mb-3" />
+
+            <div class="mb-3">
+                <label>Email</label>
+                <InputText @bind-Value="loginModel.Email" class="form-control" placeholder="Ingrese su email" />
+            </div>
+
+            <div class="mb-3">
+                <label>DNI</label>
+                <InputText @bind-Value="loginModel.Dni" class="form-control" placeholder="Ingrese su DNI" />
+            </div>
+
+            <div class="d-grid mb-3">
+                <button type="submit" class="btn btn-primary">Ingresar</button>
+            </div>
+            <div class="d-grid">
+                <button type="button" class="btn btn-outline-secondary" @onclick="IrARegistro">
+                    Registrarse
+                </button>
+            </div>
+
+
+            @if (!string.IsNullOrEmpty(message))
+            {
+                <div class="alert alert-danger py-2 text-center">@message</div>
+            }
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private LoginModel loginModel = new();
+    private string message = "";
+
+    private void HandleLogin()
+    {
+        var entrenador = EntrenadorService.GetByEmailAndDni(loginModel.Email, loginModel.Dni);
+        if (entrenador != null)
+        {
+            Nav.NavigateTo($"/dashboard-entrenador/{entrenador.dni}");
+            return;
+        }
+
+        var cliente = ClienteService.TraerTodos()
+            .FirstOrDefault(c => c.email == loginModel.Email && c.dni == loginModel.Dni);
+
+        if (cliente != null)
+        {
+            Nav.NavigateTo($"/dashboard-cliente/{cliente.dni}");
+            return;
+        }
+
+        message = "Usuario no encontrado.";
+    }
+
+    public class LoginModel
+    {
+        [Required] public string Email { get; set; } = string.Empty;
+        [Required] public string Dni { get; set; } = string.Empty;
+    }
+    private void IrARegistro()
+    {
+        Nav.NavigateTo("/registrar-entrenador");
+    }
+
+}
+
