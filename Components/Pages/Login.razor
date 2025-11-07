@@ -1,8 +1,10 @@
 ﻿@page "/login"
+@layout Layout.EmptyLayout
 @rendermode InteractiveServer
 @inject NavigationManager Nav
 @inject ProyectoGym.Business.EntrenadorService EntrenadorService
 @inject ProyectoGym.Business.ClienteService ClienteService
+@using ProyectoGym.Business
 @using ProyectoGym.Domain
 @using System.ComponentModel.DataAnnotations
 
@@ -12,18 +14,18 @@
 
         <EditForm Model="@loginModel" OnValidSubmit="@HandleLogin" FormName="Login">
             <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger mb-3" />
-
+            
+            <ValidationMessage For="@(() => loginModel.Email)" class="text-danger mb-2" />
             <div class="mb-3">
                 <label>Email</label>
                 <InputText @bind-Value="loginModel.Email" class="form-control" placeholder="Ingrese su email" />
             </div>
 
+            <ValidationMessage For="@(() => loginModel.Contraseña)" class="text-danger mb-2" />
             <div class="mb-3">
-                <label>DNI</label>
-                <InputText @bind-Value="loginModel.Dni" class="form-control" placeholder="Ingrese su DNI" />
+                <label>Contraseña</label>
+                <InputText @bind-Value="loginModel.Contraseña" type="password" class="form-control" placeholder="Ingrese su contraseña" />
             </div>
-
             <div class="d-grid mb-3">
                 <button type="submit" class="btn btn-primary">Ingresar</button>
             </div>
@@ -36,7 +38,7 @@
 
             @if (!string.IsNullOrEmpty(message))
             {
-                <div class="alert alert-danger py-2 text-center">@message</div>
+                <div class="alert alert-danger py-2 text-center mt-3">@message</div>
             }
         </EditForm>
     </div>
@@ -48,34 +50,43 @@
 
     private void HandleLogin()
     {
-        var entrenador = EntrenadorService.GetByEmailAndDni(loginModel.Email, loginModel.Dni);
+        message = "";
+
+        var entrenador = EntrenadorService.GetByEmail(loginModel.Email);
         if (entrenador != null)
         {
-            Nav.NavigateTo($"/dashboard-entrenador/{entrenador.dni}");
-            return;
+            if (ContraseñaHasher.VerifyPassword(loginModel.Contraseña, entrenador.contraseña))
+            {
+                Nav.NavigateTo($"/dashboard-entrenador/{entrenador.dni}");
+                return;
+            }
         }
 
-        var cliente = ClienteService.TraerTodos()
-            .FirstOrDefault(c => c.email == loginModel.Email && c.dni == loginModel.Dni);
-
+        var cliente = ClienteService.GetByEmail(loginModel.Email);
         if (cliente != null)
         {
-            Nav.NavigateTo($"/dashboard-cliente/{cliente.dni}");
-            return;
+            if (ContraseñaHasher.VerifyPassword(loginModel.Contraseña, cliente.contraseña))
+            {
+                Nav.NavigateTo($"/dashboard-cliente/{cliente.dni}");
+                return;
+            }
         }
 
-        message = "Usuario no encontrado.";
+        message = "Email o contraseña incorrectos.";
     }
 
     public class LoginModel
     {
-        [Required] public string Email { get; set; } = string.Empty;
-        [Required] public string Dni { get; set; } = string.Empty;
+        [Required(ErrorMessage = "El Email es obligatorio")]
+        [EmailAddress(ErrorMessage = "El formato del Email no es válido")]
+        public string Email { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "La contraseña es obligatoria")]
+        public string Contraseña { get; set; } = string.Empty;
     }
+
     private void IrARegistro()
     {
         Nav.NavigateTo("/registrar-entrenador");
     }
-
 }
-

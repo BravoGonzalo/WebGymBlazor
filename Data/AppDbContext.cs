@@ -9,9 +9,9 @@ namespace ProyectoGym.Data
         {
         }
 
-        public DbSet<Cliente> Clientes { get; set; } = null!;
-        public DbSet<Entrenador> Entrenadores { get; set; } = null!;
-        public DbSet<Rutina> Rutinas { get; set; } = null!;
-        
+        public DbSet<Cliente> Clientes { get; set; }
+        public DbSet<Entrenador> Entrenadores { get; set; }
+        public DbSet<Rutina> Rutinas { get; set; }
+        public DbSet<Ejercicio> Ejercicios { get; set; }
     }
 }

@@ -8,8 +8,18 @@ namespace ProyectoGym.Domain
 {
     public class EnumEjercicio
     {
-        public nombreEjercicio nombreEJ { get; set; }
-        public enum nombreEjercicio
+        public enum DiaDeLaSemana
+        {
+            Lunes,
+            Martes,
+            Miercoles,
+            Jueves,
+            Viernes,
+            Sabado,
+            Domingo
+        }
+
+        public enum NombreEjercicio
         {
             PressBanca,
             Sentadillas,

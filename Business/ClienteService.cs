@@ -25,8 +25,12 @@ namespace ProyectoGym.Business
             if (string.IsNullOrEmpty(cliente.nombre))
                 throw new Exception("El nombre es obligatorio");
 
-            if (cliente.rutinaxdia == null)
-                cliente.rutinaxdia = new List<Rutina>();
+            if (cliente.Rutinas == null)
+                cliente.Rutinas= new List<Rutina>();
+
+            if (string.IsNullOrWhiteSpace(cliente.contraseña))
+                throw new Exception("La contraseña es obligatoria");
+            cliente.contraseña = ContraseñaHasher.HashPassword(cliente.contraseña);
 
             _repo.Add(cliente);
         }
@@ -45,7 +49,7 @@ namespace ProyectoGym.Business
             existente.email = cliente.email;
             existente.genero = cliente.genero;
             existente.pago = cliente.pago;
-            existente.rutinaxdia = cliente.rutinaxdia;
+            existente.Rutinas = cliente.Rutinas;
 
             _repo.Update(existente);
         }
@@ -59,14 +63,24 @@ namespace ProyectoGym.Business
             _repo.Delete(cliente);
         }
 
-        public List<Cliente> TraerTodos()
+        public Cliente? GetByEmail(string email)
         {
-            return _repo.GetAll();
+            if (string.IsNullOrWhiteSpace(email))
+                return null;
+            return _repo.FindByEmail(email);
         }
 
-        public Cliente TraerPorId(int id)
+        public Cliente GetById(int id)
         {
             return _repo.GetById(id);
+        }
+        public List<Cliente> GetByEntrenadorId(int entrenadorId)
+        {
+            return _repo.FindByEntrenadorId(entrenadorId);
+        }
+        public Cliente? GetByDni(string dni)
+        {
+            return _repo.FindByDni(dni);
         }
     }
 }

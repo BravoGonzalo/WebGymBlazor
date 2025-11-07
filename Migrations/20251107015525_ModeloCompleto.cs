@@ -2,25 +2,48 @@
 
 #nullable disable
 
-namespace Proyecto_Gym.Migrations
+namespace ProyectoGym.Migrations
 {
     /// <inheritdoc />
-    public partial class Inicial : Migration
+    public partial class ModeloCompleto : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "Clientes",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    pago = table.Column<bool>(type: "bit", nullable: false),
+                    contraseña = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IdEntrenador = table.Column<int>(type: "int", nullable: false),
+                    nombre = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    apellido = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    dni = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    direccion = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    telefono = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    email = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    genero = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Clientes", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "Entrenadores",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    contraseña = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     nombre = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     apellido = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    dni = table.Column<int>(type: "int", nullable: false),
+                    dni = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     direccion = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    telefono = table.Column<int>(type: "int", nullable: false),
+                    telefono = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     email = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     genero = table.Column<int>(type: "int", nullable: false)
                 },
@@ -30,39 +53,14 @@ namespace Proyecto_Gym.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Clientes",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    pago = table.Column<bool>(type: "bit", nullable: false),
-                    EntrenadorId = table.Column<int>(type: "int", nullable: true),
-                    nombre = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    apellido = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    dni = table.Column<int>(type: "int", nullable: false),
-                    direccion = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    telefono = table.Column<int>(type: "int", nullable: false),
-                    email = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    genero = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Clientes", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Clientes_Entrenadores_EntrenadorId",
-                        column: x => x.EntrenadorId,
-                        principalTable: "Entrenadores",
-                        principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Rutinas",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    nombre = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ClienteId = table.Column<int>(type: "int", nullable: true)
+                    Nombre = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Dia = table.Column<int>(type: "int", nullable: false),
+                    ClienteId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -71,38 +69,35 @@ namespace Proyecto_Gym.Migrations
                         name: "FK_Rutinas_Clientes_ClienteId",
                         column: x => x.ClienteId,
                         principalTable: "Clientes",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Ejercicio",
+                name: "Ejercicios",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    nombreEJ = table.Column<int>(type: "int", nullable: false),
                     series = table.Column<int>(type: "int", nullable: false),
                     repeticiones = table.Column<int>(type: "int", nullable: false),
-                    nombreEJ = table.Column<int>(type: "int", nullable: false),
-                    RutinaId = table.Column<int>(type: "int", nullable: true)
+                    RutinaId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Ejercicio", x => x.Id);
+                    table.PrimaryKey("PK_Ejercicios", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Ejercicio_Rutinas_RutinaId",
+                        name: "FK_Ejercicios_Rutinas_RutinaId",
                         column: x => x.RutinaId,
                         principalTable: "Rutinas",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Clientes_EntrenadorId",
-                table: "Clientes",
-                column: "EntrenadorId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Ejercicio_RutinaId",
-                table: "Ejercicio",
+                name: "IX_Ejercicios_RutinaId",
+                table: "Ejercicios",
                 column: "RutinaId");
 
             migrationBuilder.CreateIndex(
@@ -115,16 +110,16 @@ namespace Proyecto_Gym.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Ejercicio");
+                name: "Ejercicios");
+
+            migrationBuilder.DropTable(
+                name: "Entrenadores");
 
             migrationBuilder.DropTable(
                 name: "Rutinas");
 
             migrationBuilder.DropTable(
                 name: "Clientes");
-
-            migrationBuilder.DropTable(
-                name: "Entrenadores");
         }
     }
 }

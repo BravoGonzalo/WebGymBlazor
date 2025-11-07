@@ -1,0 +1,103 @@
+﻿@page "/asignar-rutina/{ClienteId:int}/{DniEntrenador}"
+@rendermode InteractiveServer
+@inject ProyectoGym.Business.ClienteService ClienteService
+@inject ProyectoGym.Business.RutinaService RutinaService
+@inject NavigationManager Navigation
+@using ProyectoGym.Domain
+@using static ProyectoGym.Domain.EnumEjercicio
+
+@if (cliente == null)
+{
+    <div class="alert alert-warning">Cargando cliente...</div>
+}
+else
+{
+    <h3 class="mb-3">Gestionar Rutinas para: <strong>@cliente.nombre @cliente.apellido</strong></h3>
+    <p>Selecciona un día para crear o modificar su rutina.</p>
+
+    <div class="list-group shadow-sm">
+        @foreach (var dia in (DiaDeLaSemana[])Enum.GetValues(typeof(DiaDeLaSemana)))
+        {
+            var rutinaDelDia = cliente.Rutinas.FirstOrDefault(r => r.Dia == dia);
+
+            <div class="list-group-item d-flex justify-content-between align-items-center">
+                <div class="flex-grow-1">
+                    <h5 class="mb-1">@dia</h5>
+                    @if (rutinaDelDia != null)
+                    {
+                        <small class="text-muted">Nombre: @rutinaDelDia.Nombre</small>
+                    }
+                    else
+                    {
+                        <small class="text-muted">Sin rutina asignada.</small>
+                    }
+                </div>
+
+                @if (rutinaDelDia != null)
+                {
+                    <button class="btn btn-warning me-2" @onclick="() => EditarRutina(rutinaDelDia.Id)">
+                        Editar Rutina
+                    </button>
+                    <button class="btn btn-danger" @onclick="() => EliminarRutina(rutinaDelDia)">
+                        Eliminar
+                    </button>
+                }
+                else
+                {
+                    <button class="btn btn-primary" @onclick="() => CrearRutina(dia)">
+                        Crear Rutina
+                    </button>
+                }
+            </div>
+        }
+    </div>
+
+    <button class="btn btn-outline-secondary mt-4" @onclick="Volver">← Volver al Panel</button>
+}
+
+@code {
+    [Parameter] public int ClienteId { get; set; }
+    [Parameter] public string DniEntrenador { get; set; } = string.Empty;
+
+    private Cliente? cliente;
+
+    protected override void OnParametersSet()
+    {
+        CargarCliente();
+    }
+
+    private void CargarCliente()
+    {
+        cliente = ClienteService.GetById(ClienteId);
+    }
+
+    private void CrearRutina(DiaDeLaSemana dia)
+    {
+        Navigation.NavigateTo($"/crear-rutina/{ClienteId}/{dia}/{DniEntrenador}");
+    }
+
+    private void EditarRutina(int rutinaId)
+    {
+        Navigation.NavigateTo($"/editar-rutina/{rutinaId}/{DniEntrenador}");
+    }
+
+    private void EliminarRutina(Rutina rutinaParaEliminar)
+    {
+        try
+        {
+            RutinaService.EliminarRutina(rutinaParaEliminar.Id);
+
+            CargarCliente();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al eliminar rutina: {ex.Message}");
+        }
+    }
+
+    private void Volver()
+    {
+        Navigation.NavigateTo($"/dashboard-entrenador/{DniEntrenador}");
+    }
+}

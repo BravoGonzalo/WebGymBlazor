@@ -16,12 +16,11 @@ namespace ProyectoGym.Data
         {
             _context = context;
         }
-        //Buscar por email y dni
-        public Entrenador? FindByEmailAndDni(string email, string dni)
-        {
-            return _context.Entrenadores.FirstOrDefault(e => e.email == email && e.dni == dni);
-        }
 
+        public Entrenador? FindByEmail(string email)
+        {
+            return _context.Entrenadores.FirstOrDefault(e => e.email == email);
+        }
 
         // Agregar entrenador
         public void Add(Entrenador entrenador)
@@ -54,6 +53,13 @@ namespace ProyectoGym.Data
         public List<Entrenador> GetAll()
         {
             return _context.Entrenadores.ToList();
+        }
+        public Entrenador? FindByDni(string dni)
+        {
+            if (string.IsNullOrWhiteSpace(dni))
+                return null;
+
+            return _context.Entrenadores.FirstOrDefault(e => e.dni == dni);
         }
     }
 }

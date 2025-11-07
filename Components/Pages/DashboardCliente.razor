@@ -1,0 +1,88 @@
+﻿@page "/dashboard-cliente/{dni}"
+@rendermode InteractiveServer
+@inject ProyectoGym.Business.ClienteService ClienteService
+@inject NavigationManager Navigation
+@using ProyectoGym.Domain
+@using static ProyectoGym.Domain.EnumEjercicio
+
+@if (cliente == null)
+{
+    <div class="alert alert-info">Cargando tu información...</div>
+}
+else
+{
+    <h3 class="mb-3">Mi Panel de Rutinas</h3>
+    <h5 class="text-muted mb-4">¡Bienvenido, @cliente.nombre @cliente.apellido!</h5>
+
+    <div class="list-group shadow-sm">
+
+        @foreach (var dia in (DiaDeLaSemana[])Enum.GetValues(typeof(DiaDeLaSemana)))
+        {
+            var rutinaDelDia = cliente.Rutinas.FirstOrDefault(r => r.Dia == dia);
+
+            <div class="list-group-item list-group-item-action @(diaAbierto == dia ? "active" : "")"
+                 @onclick="() => ToggleDia(dia)" style="cursor: pointer;">
+
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">@dia</h5>
+                    @if (rutinaDelDia != null)
+                    {
+                        <span class="badge bg-primary ms-3">@rutinaDelDia.Nombre</span>
+                    }
+                </div>
+            </div>
+
+            @if (diaAbierto == dia)
+            {
+                <div class="list-group-item">
+                    @if (rutinaDelDia == null || !rutinaDelDia.Ejercicios.Any())
+                    {
+                        <p class="text-muted fst-italic mb-0">¡Día de descanso! No hay rutina asignada.</p>
+                    }
+                    else
+                    {
+                        <ul class="list-group list-group-flush">
+                            @foreach (var ej in rutinaDelDia.Ejercicios)
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <strong>@ej.nombreEJ.ToString().Replace("Press", "Press de ")</strong>
+                                    <span class="badge bg-dark rounded-pill">@ej.series series x @ej.repeticiones reps</span>
+                                </li>
+                            }
+                        </ul>
+                    }
+                </div>
+            }
+        }
+    </div>
+    <button class="btn btn-outline-secondary mt-4" @onclick="Salir">Salir</button>
+}
+
+@code {
+    [Parameter] public string dni { get; set; } = string.Empty;
+    private Cliente? cliente;
+
+    private DiaDeLaSemana? diaAbierto = null;
+
+    protected override void OnParametersSet()
+    {
+        cliente = ClienteService.GetByDni(dni);
+    }
+
+    private void ToggleDia(DiaDeLaSemana dia)
+    {
+        if (diaAbierto == dia)
+        {
+            diaAbierto = null;
+        }
+        else
+        {
+            diaAbierto = dia;
+        }
+    }
+
+    private void Salir()
+    {
+        Navigation.NavigateTo("/", forceLoad: true);
+    }
+}

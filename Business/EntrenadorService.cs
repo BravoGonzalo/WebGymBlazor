@@ -31,6 +31,11 @@ namespace ProyectoGym.Business
             if (string.IsNullOrWhiteSpace(entrenador.dni))
                 throw new Exception("El DNI es obligatorio");
 
+            if (string.IsNullOrWhiteSpace(entrenador.contraseña))
+                throw new Exception("La contraseña es obligatoria");
+
+            entrenador.contraseña = ContraseñaHasher.HashPassword(entrenador.contraseña);
+
             _repo.Add(entrenador);
         }
 
@@ -70,12 +75,17 @@ namespace ProyectoGym.Business
             return _repo.GetById(id);
         }
 
-        public Entrenador? GetByEmailAndDni(string email, string dni)
+        public Entrenador? GetByEmail(string email)
         {
-            if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(dni))
+            if (string.IsNullOrWhiteSpace(email))
                 return null;
-            return _repo.FindByEmailAndDni(email, dni);
+            return _repo.FindByEmail(email);
         }
+        public Entrenador? GetByDni(string dni)
+        {
+            return _repo.FindByDni(dni);
+        }
+
     }
 }
 

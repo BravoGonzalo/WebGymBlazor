@@ -3,29 +3,45 @@
 @using ProyectoGym.Domain
 @inject NavigationManager Navigation
 @inject ProyectoGym.Business.ClienteService ClienteService
+@inject ProyectoGym.Business.EntrenadorService EntrenadorService
 
-<h3>Agregar Cliente</h3>
+<h3 class="mb-3">Agregar Nuevo Cliente</h3>
 
 <div class="card p-4 shadow-sm" style="max-width: 600px;">
-    <EditForm Model="@nuevoCliente" OnValidSubmit="AgregarCliente" FormName="client">
+    <EditForm Model="@nuevoCliente" OnValidSubmit="HandleAgregarCliente" FormName="client">
         <DataAnnotationsValidator />
-        <ValidationSummary />
 
-        <div class="mb-3">
-            <label>Nombre</label>
-            <InputText @bind-Value="nuevoCliente.nombre" class="form-control" />
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label>Nombre</label>
+                <InputText @bind-Value="nuevoCliente.nombre" class="form-control" />
+                <ValidationMessage For="() => nuevoCliente.nombre" class="text-danger" />
+            </div>
+            <div class="col-md-6 mb-3">
+                <label>Apellido</label>
+                <InputText @bind-Value="nuevoCliente.apellido" class="form-control" />
+                <ValidationMessage For="() => nuevoCliente.apellido" class="text-danger" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label>Email</label>
+                <InputText @bind-Value="nuevoCliente.email" class="form-control" />
+                <ValidationMessage For="() => nuevoCliente.email" class="text-danger" />
+            </div>
+            <div class="col-md-6 mb-3">
+                <label>DNI</label>
+                <InputText @bind-Value="nuevoCliente.dni" class="form-control" />
+                <ValidationMessage For="() => nuevoCliente.dni" class="text-danger" />
+            </div>
         </div>
 
         <div class="mb-3">
-            <label>Apellido</label>
-            <InputText @bind-Value="nuevoCliente.apellido" class="form-control" />
+            <label>Contraseña para el Cliente</label>
+            <InputText @bind-Value="nuevoCliente.contraseña" type="password" class="form-control" placeholder="Contraseña de inicio de sesión" />
+            <ValidationMessage For="() => nuevoCliente.contraseña" class="text-danger" />
         </div>
-
-        <div class="mb-3">
-            <label>DNI</label>
-            <InputText @bind-Value="nuevoCliente.dni" class="form-control" />
-        </div>
-
         <div class="mb-3">
             <label>Dirección</label>
             <InputText @bind-Value="nuevoCliente.direccion" class="form-control" />
@@ -34,11 +50,6 @@
         <div class="mb-3">
             <label>Teléfono</label>
             <InputText @bind-Value="nuevoCliente.telefono" class="form-control" />
-        </div>
-
-        <div class="mb-3">
-            <label>Email</label>
-            <InputText @bind-Value="nuevoCliente.email" class="form-control" />
         </div>
 
         <div class="mb-3">
@@ -56,6 +67,11 @@
             <label class="form-check-label">Pago realizado</label>
         </div>
 
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger">@errorMessage</div>
+        }
+
         <div class="d-flex justify-content-between mt-4">
             <button type="submit" class="btn btn-primary">Guardar</button>
             <button type="button" class="btn btn-secondary" @onclick="Volver">Cancelar</button>
@@ -68,23 +84,43 @@
     public string dniEntrenador { get; set; } = string.Empty;
 
     private Cliente nuevoCliente = new Cliente();
+    private Entrenador? entrenadorLogueado;
+    private string errorMessage = string.Empty;
 
-    private void AgregarCliente()
+    protected override void OnInitialized()
     {
+        entrenadorLogueado = EntrenadorService.GetByDni(dniEntrenador);
+
+        if (entrenadorLogueado == null)
+        {
+            errorMessage = "Error: No se pudo identificar al entrenador. Vuelva al panel.";
+        }
+    }
+    
+    private void HandleAgregarCliente()
+    {
+        errorMessage = string.Empty;
+        if (entrenadorLogueado == null)
+        {
+            errorMessage = "No se puede guardar el cliente: Entrenador no válido.";
+            return;
+        }
+
         try
         {
-            nuevoCliente.rutinaxdia = new List<Rutina>();
+            nuevoCliente.IdEntrenador = entrenadorLogueado.Id;
             ClienteService.CrearCliente(nuevoCliente);
-            Navigation.NavigateTo($"/dashboard-entrenador/{dniEntrenador}", forceLoad: true);
+
+            Navigation.NavigateTo($"/dashboard-entrenador/{dniEntrenador}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error al agregar cliente: {ex.Message}");
+            errorMessage = $"Error al agregar cliente: {ex.Message}";
         }
     }
 
     private void Volver()
     {
-        Navigation.NavigateTo($"/dashboard-entrenador/{dniEntrenador}", forceLoad: true);
+        Navigation.NavigateTo($"/dashboard-entrenador/{dniEntrenador}");
     }
 }

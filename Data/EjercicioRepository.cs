@@ -1,9 +1,6 @@
 ﻿using ProyectoGym.Domain;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using ProyectoGym.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace ProyectoGym.Data
 {
@@ -16,38 +13,34 @@ namespace ProyectoGym.Data
             _context = context;
         }
 
-
-        // Agregar ejercicio
         public void Add(Ejercicio ejercicio)
         {
-            _context.Add(ejercicio);
+            _context.Ejercicios.Add(ejercicio);
             _context.SaveChanges();
         }
 
-        // Modificar ejercicio
         public void Update(Ejercicio ejercicio)
         {
-            _context.Update(ejercicio);
+            _context.Ejercicios.Update(ejercicio);
             _context.SaveChanges();
         }
 
-        // Eliminar ejercicio
         public void Delete(Ejercicio ejercicio)
         {
-            _context.Remove(ejercicio);
+            _context.Ejercicios.Remove(ejercicio);
             _context.SaveChanges();
         }
 
-        // Traer ejercicio por Id
-        public Ejercicio GetById(int id)
+        public Ejercicio? GetById(int id)
         {
-            return _context.Set<Ejercicio>().Find(id);
+            return _context.Ejercicios.FirstOrDefault(e => e.Id == id);
         }
 
-        // Traer todos los ejercicios
-        public List<Ejercicio> GetAll()
+        public List<Ejercicio> GetByRutinaId(int rutinaId)
         {
-            return _context.Set<Ejercicio>().ToList();
+            return _context.Ejercicios
+                           .Where(e => e.RutinaId == rutinaId)
+                           .ToList();
         }
     }
 }

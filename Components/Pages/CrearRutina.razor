@@ -1,0 +1,195 @@
+﻿@page "/crear-rutina/{ClienteId:int}/{Dia}/{DniEntrenador}"
+@rendermode InteractiveServer
+@inject ProyectoGym.Business.RutinaService RutinaService
+@inject ProyectoGym.Business.ClienteService ClienteService
+@inject NavigationManager Navigation
+@using ProyectoGym.Domain
+@using System.ComponentModel.DataAnnotations
+@using static ProyectoGym.Domain.EnumEjercicio
+
+@if (cliente == null)
+{
+    <div class="alert alert-info">Cargando...</div>
+}
+else
+{
+    <h3 class="mb-3">Crear Rutina para <strong>@cliente.nombre</strong></h3>
+    <h5 class="text-muted mb-4">Día: <strong>@Dia</strong></h5>
+
+    <div class="row">
+        <div class="col-lg-7">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <EditForm Model="@nuevaRutina" OnValidSubmit="GuardarRutinaCompleta">
+                        <DataAnnotationsValidator />
+
+                        <div class="mb-3">
+                            <label class="form-label"><strong>Nombre de la Rutina</strong></label>
+                            <InputText @bind-Value="nuevaRutina.Nombre" class="form-control" placeholder="Ej: Día de Pecho y Tríceps" />
+                            <ValidationMessage For="() => nuevaRutina.Nombre" class="text-danger" />
+                        </div>
+
+                        <hr />
+
+                        <h5 class="mt-4">Ejercicios Agregados</h5>
+                        @if (!nuevaRutina.Ejercicios.Any())
+                        {
+                            <p>Aún no hay ejercicios. Añádelos desde el panel de la derecha.</p>
+                        }
+                        else
+                        {
+                            <ul class="list-group">
+                                @foreach (var ej in nuevaRutina.Ejercicios)
+                                {
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span>
+                                            <strong>@ej.nombreEJ.ToString()</strong>
+                                            (@ej.series series x @ej.repeticiones reps)
+                                        </span>
+                                        <button type="button" class="btn btn-danger btn-sm" @onclick="() => QuitarEjercicio(ej)">
+                                            X
+                                        </button>
+                                    </li>
+                                }
+                            </ul>
+                        }
+
+                        <hr />
+
+                        @if (!string.IsNullOrEmpty(errorMessage))
+                        {
+                            <div class="alert alert-danger">@errorMessage</div>
+                        }
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                Guardar Rutina Completa
+                            </button>
+                            <button type="button" class="btn btn-secondary" @onclick="Volver">
+                                Cancelar
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">Añadir Ejercicio</h5>
+                </div>
+                <div class="card-body">
+                    <EditForm Model="@nuevoEjercicio" OnValidSubmit="AgregarEjercicioALista">
+                        <DataAnnotationsValidator />
+
+                        <div class="mb-3">
+                            <label class="form-label">Ejercicio</label>
+                            <InputSelect @bind-Value="nuevoEjercicio.nombreEJ" class="form-select">
+                                @foreach (NombreEjercicio nombre in Enum.GetValues(typeof(NombreEjercicio)))
+                                {
+                                    <option value="@nombre">@nombre.ToString()</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Series</label>
+                            <InputNumber @bind-Value="nuevoEjercicio.series" class="form-control" />
+                            <ValidationMessage For="() => nuevoEjercicio.series" class="text-danger" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Repeticiones</label>
+                            <InputNumber @bind-Value="nuevoEjercicio.repeticiones" class="form-control" />
+                            <ValidationMessage For="() => nuevoEjercicio.repeticiones" class="text-danger" />
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                + Añadir Ejercicio
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public int ClienteId { get; set; }
+    [Parameter] public string DniEntrenador { get; set; } = string.Empty;
+
+    [Parameter] public string Dia { get; set; } = string.Empty;
+
+    private DiaDeLaSemana diaEnum;
+
+    private Cliente? cliente;
+    private string errorMessage = "";
+    private Rutina nuevaRutina = new();
+    private EjercicioFormModel nuevoEjercicio = new();
+
+    public class EjercicioFormModel
+    {
+        public NombreEjercicio nombreEJ { get; set; }
+        [Required][Range(1, 100)] public int series { get; set; } = 4;
+        [Required][Range(1, 100)] public int repeticiones { get; set; } = 10;
+    }
+
+    // --- ¡CORRECCIÓN AQUÍ! ---
+    protected override void OnParametersSet()
+    {
+        if (!Enum.TryParse(Dia, out diaEnum))
+        {
+            errorMessage = "Día no válido.";
+            return;
+        }
+
+        cliente = ClienteService.GetById(ClienteId);
+
+        nuevaRutina.ClienteId = ClienteId;
+        nuevaRutina.Dia = diaEnum;
+    }
+
+    private void AgregarEjercicioALista()
+    {
+        var ejercicioReal = new Ejercicio
+        {
+            nombreEJ = nuevoEjercicio.nombreEJ,
+            series = nuevoEjercicio.series,
+            repeticiones = nuevoEjercicio.repeticiones
+        };
+        nuevaRutina.Ejercicios.Add(ejercicioReal);
+        nuevoEjercicio = new EjercicioFormModel();
+    }
+
+    private void QuitarEjercicio(Ejercicio ejercicio)
+    {
+        nuevaRutina.Ejercicios.Remove(ejercicio);
+    }
+
+    private void GuardarRutinaCompleta()
+    {
+        errorMessage = "";
+        if (!nuevaRutina.Ejercicios.Any())
+        {
+            errorMessage = "No se puede guardar una rutina sin ejercicios.";
+            return;
+        }
+        try
+        {
+            RutinaService.CrearRutina(nuevaRutina);
+            Volver();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error al guardar: {ex.Message}";
+        }
+    }
+
+    private void Volver()
+    {
+        Navigation.NavigateTo($"/asignar-rutina/{ClienteId}/{DniEntrenador}");
+    }
+}

@@ -1,10 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore; 
 using ProyectoGym.Domain;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ProyectoGym.Data
 {
@@ -29,23 +25,29 @@ namespace ProyectoGym.Data
             _context.SaveChanges();
         }
 
+
+
         public void Delete(Rutina rutina)
         {
             _context.Rutinas.Remove(rutina);
             _context.SaveChanges();
         }
 
+
+
         public Rutina GetById(int id)
         {
             return _context.Rutinas
-                .Include(r => r.ejercicios)
+                .Include(r => r.Ejercicios)
                 .FirstOrDefault(r => r.Id == id);
         }
+
+
 
         public List<Rutina> GetAll()
         {
             return _context.Rutinas
-                .Include(r => r.ejercicios)
+                .Include(r => r.Ejercicios)
                 .ToList();
         }
     }

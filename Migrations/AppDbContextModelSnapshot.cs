@@ -2,29 +2,26 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProyectoGym.Data;
 
 #nullable disable
 
-namespace Proyecto_Gym.Migrations
+namespace ProyectoGym.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250908171653_UpdatePersonaTelefonoyDni")]
-    partial class UpdatePersonaTelefonoyDni
+    partial class AppDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.8")
+                .HasAnnotation("ProductVersion", "9.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Proyecto_Gym.Domain.Cliente", b =>
+            modelBuilder.Entity("ProyectoGym.Domain.Cliente", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -32,10 +29,14 @@ namespace Proyecto_Gym.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("EntrenadorId")
+                    b.Property<int>("IdEntrenador")
                         .HasColumnType("int");
 
                     b.Property<string>("apellido")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("contraseña")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -43,8 +44,9 @@ namespace Proyecto_Gym.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long>("dni")
-                        .HasColumnType("bigint");
+                    b.Property<string>("dni")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("email")
                         .IsRequired()
@@ -66,12 +68,10 @@ namespace Proyecto_Gym.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("EntrenadorId");
-
                     b.ToTable("Clientes");
                 });
 
-            modelBuilder.Entity("Proyecto_Gym.Domain.Ejercicio", b =>
+            modelBuilder.Entity("ProyectoGym.Domain.Ejercicio", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -79,7 +79,7 @@ namespace Proyecto_Gym.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("RutinaId")
+                    b.Property<int>("RutinaId")
                         .HasColumnType("int");
 
                     b.Property<int>("nombreEJ")
@@ -95,10 +95,10 @@ namespace Proyecto_Gym.Migrations
 
                     b.HasIndex("RutinaId");
 
-                    b.ToTable("Ejercicio");
+                    b.ToTable("Ejercicios");
                 });
 
-            modelBuilder.Entity("Proyecto_Gym.Domain.Entrenador", b =>
+            modelBuilder.Entity("ProyectoGym.Domain.Entrenador", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -110,12 +110,17 @@ namespace Proyecto_Gym.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("contraseña")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("direccion")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long>("dni")
-                        .HasColumnType("bigint");
+                    b.Property<string>("dni")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("email")
                         .IsRequired()
@@ -137,7 +142,7 @@ namespace Proyecto_Gym.Migrations
                     b.ToTable("Entrenadores");
                 });
 
-            modelBuilder.Entity("Proyecto_Gym.Domain.Rutina", b =>
+            modelBuilder.Entity("ProyectoGym.Domain.Rutina", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -145,10 +150,13 @@ namespace Proyecto_Gym.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("ClienteId")
+                    b.Property<int>("ClienteId")
                         .HasColumnType("int");
 
-                    b.Property<string>("nombre")
+                    b.Property<int>("Dia")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Nombre")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -159,40 +167,36 @@ namespace Proyecto_Gym.Migrations
                     b.ToTable("Rutinas");
                 });
 
-            modelBuilder.Entity("Proyecto_Gym.Domain.Cliente", b =>
+            modelBuilder.Entity("ProyectoGym.Domain.Ejercicio", b =>
                 {
-                    b.HasOne("Proyecto_Gym.Domain.Entrenador", null)
-                        .WithMany("clientes")
-                        .HasForeignKey("EntrenadorId");
+                    b.HasOne("ProyectoGym.Domain.Rutina", "Rutina")
+                        .WithMany("Ejercicios")
+                        .HasForeignKey("RutinaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Rutina");
                 });
 
-            modelBuilder.Entity("Proyecto_Gym.Domain.Ejercicio", b =>
+            modelBuilder.Entity("ProyectoGym.Domain.Rutina", b =>
                 {
-                    b.HasOne("Proyecto_Gym.Domain.Rutina", null)
-                        .WithMany("ejercicios")
-                        .HasForeignKey("RutinaId");
+                    b.HasOne("ProyectoGym.Domain.Cliente", "Cliente")
+                        .WithMany("Rutinas")
+                        .HasForeignKey("ClienteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Cliente");
                 });
 
-            modelBuilder.Entity("Proyecto_Gym.Domain.Rutina", b =>
+            modelBuilder.Entity("ProyectoGym.Domain.Cliente", b =>
                 {
-                    b.HasOne("Proyecto_Gym.Domain.Cliente", null)
-                        .WithMany("rutinaxdia")
-                        .HasForeignKey("ClienteId");
+                    b.Navigation("Rutinas");
                 });
 
-            modelBuilder.Entity("Proyecto_Gym.Domain.Cliente", b =>
+            modelBuilder.Entity("ProyectoGym.Domain.Rutina", b =>
                 {
-                    b.Navigation("rutinaxdia");
-                });
-
-            modelBuilder.Entity("Proyecto_Gym.Domain.Entrenador", b =>
-                {
-                    b.Navigation("clientes");
-                });
-
-            modelBuilder.Entity("Proyecto_Gym.Domain.Rutina", b =>
-                {
-                    b.Navigation("ejercicios");
+                    b.Navigation("Ejercicios");
                 });
 #pragma warning restore 612, 618
         }

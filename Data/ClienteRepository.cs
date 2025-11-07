@@ -16,7 +16,11 @@ namespace ProyectoGym.Data
         {
             _context = context;
         }
-        
+        public Cliente? FindByEmail(string email)
+        {
+            return _context.Clientes.FirstOrDefault(c => c.email == email);
+        }
+
         // Agregar un cliente
         public void Add(Cliente cliente)
         {
@@ -39,19 +43,26 @@ namespace ProyectoGym.Data
         }
 
         // Traer un cliente por Id
-        public Cliente GetById(int id)
+        public Cliente? GetById(int id)
         {
             return _context.Clientes
-                .Include(c => c.rutinaxdia) // Incluimos las rutinas
-                .FirstOrDefault(c => c.Id == id);
+                           .Include(c => c.Rutinas)  
+                               .ThenInclude(r => r.Ejercicios)
+                           .FirstOrDefault(c => c.Id == id);
         }
 
-        // Traer todos los clientes
-        public List<Cliente> GetAll()
+        public List<Cliente> FindByEntrenadorId(int entrenadorId)
         {
             return _context.Clientes
-                .Include(c => c.rutinaxdia) // Incluimos las rutinas
-                .ToList();
+                           .Where(c => c.IdEntrenador == entrenadorId)
+                           .ToList();
+        }
+        public Cliente? FindByDni(string dni)
+        {
+            return _context.Clientes
+                           .Include(c => c.Rutinas)
+                               .ThenInclude(r => r.Ejercicios)
+                           .FirstOrDefault(c => c.dni == dni);
         }
     }
 }
