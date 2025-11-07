@@ -13,16 +13,23 @@ namespace ProyectoGym.Domain
         [Key] 
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
-        public bool pago { get; set; }
         public string contraseña { get; set; }
         public List<Rutina> Rutinas { get; set; } = new List<Rutina>();
         public int IdEntrenador { get; set; }
-        public Cliente(string contraseña, string nombre, string apellido, string dni, string direccion, string telefono, string email, Sexo genero, bool pago, List<Rutina> rutinaxdia) 
+        public List<Pago> Pagos { get; set; } = new List<Pago>();
+        public Cliente(string contraseña, string nombre, string apellido, string dni, string direccion, string telefono, string email, Sexo genero, List<Rutina> rutinaxdia, List<Pago> Pagos) 
             : base(nombre, apellido, dni, direccion, telefono, email, genero)
         {
-            this.pago = pago;
             this.Rutinas = rutinaxdia;
             this.contraseña = contraseña;
+        }
+        [NotMapped]
+        public bool EstaAlDia
+        {
+            get
+            {
+                return Pagos.Any(p => p.FechaDePago > DateTime.Now.AddDays(-30));
+            }
         }
         public Cliente()
         {

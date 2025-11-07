@@ -2,6 +2,7 @@
 @rendermode InteractiveServer
 @inject ProyectoGym.Business.EntrenadorService EntrenadorService
 @inject ProyectoGym.Business.ClienteService ClienteService
+@inject ProyectoGym.Business.PagoService PagoService
 @inject NavigationManager Navigation
 @using ProyectoGym.Domain
 
@@ -15,16 +16,21 @@
     {
         <div class="mb-4 p-3 bg-light rounded shadow-sm">
             <h5>Entrenador: @entrenador.nombre @entrenador.apellido</h5>
-            <div class.d-flex>
+            <div class="d-flex">
                 <small class="me-3"><strong>DNI:</strong> @entrenador.dni</small>
                 <small><strong>Email:</strong> @entrenador.email</small>
             </div>
         </div>
 
+        <div class="d-flex justify-content-end mb-3">
+            <button class="btn btn-primary" @onclick="IrAGestionEntrenadores">
+                <i class="bi bi-person-badge-fill"></i> Gestionar Entrenadores
+            </button>
+        </div>
+
         <div class="card shadow-sm">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h4 class="mb-0">Mis Clientes</h4>
-
                 <button class="btn btn-success" @onclick="AgregarCliente">
                     <i class="bi bi-person-plus-fill"></i> + Agregar Cliente
                 </button>
@@ -56,8 +62,9 @@
                                         <td>@cliente.apellido</td>
                                         <td>@cliente.dni</td>
                                         <td>@cliente.email</td>
+
                                         <td>
-                                            @if (cliente.pago)
+                                            @if (cliente.EstaAlDia)
                                             {
                                                 <span class="badge bg-success">Al día</span>
                                             }
@@ -66,12 +73,18 @@
                                                 <span class="badge bg-danger">Pendiente</span>
                                             }
                                         </td>
+
                                         <td>
-                                            <button class="btn btn-primary btn-sm me-2" @onclick="() => AsignarRutina(cliente.Id)" title="Asignar Rutina">
+                                            <button class="btn btn-success btn-sm me-1" @onclick="() => RegistrarPago(cliente.Id)" title="Registrar Pago">
+                                                Pagar
+                                            </button>
+                                            <button class="btn btn-info btn-sm me-1" @onclick="() => VerHistorialPagos(cliente.Id)" title="Ver Historial de Pagos">
+                                                Historial
+                                            </button>
+                                            <button class="btn btn-primary btn-sm me-1" @onclick="() => AsignarRutina(cliente.Id)" title="Asignar Rutina">
                                                 Rutina
                                             </button>
-
-                                            <button class="btn btn-warning btn-sm me-2" @onclick="() => EditarCliente(cliente.Id)" title="Editar Cliente">
+                                            <button class="btn btn-warning btn-sm me-1" @onclick="() => EditarCliente(cliente.Id)" title="Editar Cliente">
                                                 Editar
                                             </button>
                                             <button class="btn btn-danger btn-sm" @onclick="() => EliminarCliente(cliente.Id)" title="Eliminar Cliente">
@@ -87,7 +100,6 @@
             </div>
         </div>
 
-        <button class="btn btn-outline-secondary mt-4" @onclick="VolverAtras">← Salir</button>
     }
 </div>
 
@@ -97,6 +109,11 @@
     private List<Cliente> clientes = new();
 
     protected override void OnParametersSet()
+    {
+        RecargarClientes();
+    }
+
+    private void RecargarClientes()
     {
         entrenador = EntrenadorService.GetByDni(dni);
         if (entrenador != null)
@@ -124,6 +141,37 @@
         Navigation.NavigateTo($"/asignar-rutina/{clienteId}/{entrenador?.dni}");
     }
 
+    private void VerHistorialPagos(int clienteId)
+    {
+        Navigation.NavigateTo($"/historial-pagos/{clienteId}/{entrenador?.dni}");
+    }
+
+    private void IrAGestionEntrenadores()
+    {
+        Navigation.NavigateTo($"/gestion-entrenadores/{dni}");
+    }
+
+    private void RegistrarPago(int clienteId)
+    {
+        try
+        {
+            var nuevoPago = new Pago
+            {
+                ClienteId = clienteId,
+                FechaDePago = DateTime.Now,
+                Monto = 5000
+            };
+
+            PagoService.CrearPago(nuevoPago);
+            RecargarClientes();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al registrar pago: {ex.Message}");
+        }
+    }
+
     private void EliminarCliente(int clienteId)
     {
         try
@@ -142,8 +190,4 @@
         }
     }
 
-    private void VolverAtras()
-    {
-        Navigation.NavigateTo("/", forceLoad: true); 
-    }
 }

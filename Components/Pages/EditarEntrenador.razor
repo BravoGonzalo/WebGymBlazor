@@ -1,0 +1,123 @@
+﻿@page "/editar-entrenador/{EntrenadorId:int}/{DniEntrenador}"
+@rendermode InteractiveServer
+@using ProyectoGym.Domain
+@using System.ComponentModel.DataAnnotations
+@inject NavigationManager Navigation
+@using ProyectoGym.Business
+@inject ProyectoGym.Business.EntrenadorService EntrenadorService
+
+<h3>Editar Entrenador</h3>
+
+@if (entrenador == null)
+{
+    <div class="alert alert-warning">No se encontró el entrenador.</div>
+}
+else
+{
+    <div class="card p-4 shadow-sm" style="max-width: 600px;">
+        <EditForm Model="@editModel" OnValidSubmit="GuardarCambios">
+            <DataAnnotationsValidator />
+
+            <div class="mb-3">
+                <label>Nombre</label>
+                <InputText @bind-Value="entrenador.nombre" class="form-control" />
+            </div>
+            <div class="mb-3">
+                <label>Apellido</label>
+                <InputText @bind-Value="entrenador.apellido" class="form-control" />
+            </div>
+            <div class="mb-3">
+                <label>Email</label>
+                <InputText @bind-Value="entrenador.email" class="form-control" />
+            </div>
+            <div class="mb-3">
+                <label>DNI</label>
+                <InputText @bind-Value="entrenador.dni" class="form-control" />
+            </div>
+            <div class="mb-3">
+                <label>Dirección</label>
+                <InputText @bind-Value="entrenador.direccion" class="form-control" />
+            </div>
+            <div class="mb-3">
+                <label>Teléfono</label>
+                <InputText @bind-Value="entrenador.telefono" class="form-control" />
+            </div>
+
+            <hr />
+            <h5 class="text-muted">Restablecer Contraseña</h5>
+            <p><small>Deje estos campos en blanco para no cambiar la contraseña actual.</small></p>
+
+            <div class="mb-3">
+                <label>Nueva Contraseña</label>
+                <InputText @bind-Value="editModel.NuevaContraseña" type="password" class="form-control" />
+                <ValidationMessage For="() => editModel.NuevaContraseña" class="text-danger" />
+            </div>
+            <div class="mb-3">
+                <label>Confirmar Contraseña</label>
+                <InputText @bind-Value="editModel.ConfirmarContraseña" type="password" class="form-control" />
+                <ValidationMessage For="() => editModel.ConfirmarContraseña" class="text-danger" />
+            </div>
+
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger">@errorMessage</div>
+            }
+            <div class="d-flex justify-content-between mt-4">
+                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                <button type="button" class="btn btn-secondary" @onclick="Volver">Cancelar</button>
+            </div>
+        </EditForm>
+    </div>
+}
+
+@code {
+    [Parameter] public int EntrenadorId { get; set; }
+    [Parameter] public string DniEntrenador { get; set; } = string.Empty;
+
+    private Entrenador? entrenador;
+    private EditModel editModel = new();
+    private string errorMessage = string.Empty;
+
+    public class EditModel
+    {
+        public string NuevaContraseña { get; set; } = string.Empty;
+
+        [Compare(nameof(NuevaContraseña), ErrorMessage = "Las contraseñas no coinciden")]
+        public string ConfirmarContraseña { get; set; } = string.Empty;
+    }
+
+    protected override void OnParametersSet()
+    {
+        entrenador = EntrenadorService.TraerPorId(EntrenadorId);
+        if (entrenador == null)
+        {
+            errorMessage = "Error: No se encontró el entrenador a editar.";
+        }
+    }
+
+    private void GuardarCambios()
+    {
+        if (entrenador == null) return;
+
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(editModel.NuevaContraseña))
+            {
+                entrenador.contraseña = ContraseñaHasher.HashPassword(editModel.NuevaContraseña);
+            }
+
+            EntrenadorService.ModificarEntrenador(entrenador);
+
+            Volver();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error al guardar: {ex.Message}";
+        }
+    }
+
+    private void Volver()
+    {
+        Navigation.NavigateTo($"/gestion-entrenadores/{DniEntrenador}");
+    }
+}

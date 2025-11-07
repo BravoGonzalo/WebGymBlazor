@@ -1,0 +1,92 @@
+﻿@page "/historial-pagos/{ClienteId:int}/{DniEntrenador}"
+@rendermode InteractiveServer
+@inject ProyectoGym.Business.ClienteService ClienteService
+@inject ProyectoGym.Business.PagoService PagoService
+@inject NavigationManager Navigation
+@using ProyectoGym.Domain
+
+@if (cliente == null)
+{
+    <div class="alert alert-info">Cargando historial...</div>
+}
+else
+{
+    <h3 class="mb-3">Historial de Pagos de: <strong>@cliente.nombre @cliente.apellido</strong></h3>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            @if (!pagos.Any())
+            {
+                <p class="text-center">Este cliente no tiene pagos registrados.</p>
+            }
+            else
+            {
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Fecha de Pago</th>
+                            <th>Monto</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var pago in pagos)
+                        {
+                            <tr>
+                                <td>@pago.FechaDePago.ToString("dd/MM/yyyy HH:mm") hs</td>
+                                <td>$@pago.Monto</td>
+                                <td>
+                                    <button class="btn btn-danger btn-sm" @onclick="() => EliminarPago(pago.Id)">
+                                        Eliminar
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+
+    <button class="btn btn-outline-secondary mt-4" @onclick="Volver">← Volver al Panel</button>
+}
+
+@code {
+    [Parameter] public int ClienteId { get; set; }
+    [Parameter] public string DniEntrenador { get; set; } = string.Empty;
+
+    private Cliente? cliente;
+    private List<Pago> pagos = new();
+
+    protected override void OnInitialized()
+    {
+        CargarDatos();
+    }
+
+    private void CargarDatos()
+    {
+        cliente = ClienteService.GetById(ClienteId);
+
+        pagos = PagoService.TraerPagosPorCliente(ClienteId);
+    }
+
+    private void EliminarPago(int pagoId)
+    {
+        try
+        {
+            PagoService.EliminarPago(pagoId);
+
+            CargarDatos();
+            StateHasChanged(); 
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al eliminar pago: {ex.Message}");
+        }
+    }
+
+    private void Volver()
+    {
+        Navigation.NavigateTo($"/dashboard-entrenador/{DniEntrenador}");
+    }
+}

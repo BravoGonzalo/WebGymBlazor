@@ -48,8 +48,6 @@ namespace ProyectoGym.Business
             existente.telefono = cliente.telefono;
             existente.email = cliente.email;
             existente.genero = cliente.genero;
-            existente.pago = cliente.pago;
-            existente.Rutinas = cliente.Rutinas;
 
             _repo.Update(existente);
         }

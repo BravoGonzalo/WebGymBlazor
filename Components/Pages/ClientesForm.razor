@@ -62,11 +62,6 @@
             </InputSelect>
         </div>
 
-        <div class="mb-3 form-check">
-            <InputCheckbox @bind-Value="nuevoCliente.pago" class="form-check-input" />
-            <label class="form-check-label">Pago realizado</label>
-        </div>
-
         @if (!string.IsNullOrEmpty(errorMessage))
         {
             <div class="alert alert-danger">@errorMessage</div>
@@ -96,7 +91,7 @@
             errorMessage = "Error: No se pudo identificar al entrenador. Vuelva al panel.";
         }
     }
-    
+
     private void HandleAgregarCliente()
     {
         errorMessage = string.Empty;

@@ -1,11 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace ProyectoGym.Migrations
 {
     /// <inheritdoc />
-    public partial class ModeloCompleto : Migration
+    public partial class cositas : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -16,7 +17,6 @@ namespace ProyectoGym.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    pago = table.Column<bool>(type: "bit", nullable: false),
                     contraseña = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     IdEntrenador = table.Column<int>(type: "int", nullable: false),
                     nombre = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -50,6 +50,27 @@ namespace ProyectoGym.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Entrenadores", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Pagos",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    FechaDePago = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Monto = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    ClienteId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Pagos", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Pagos_Clientes_ClienteId",
+                        column: x => x.ClienteId,
+                        principalTable: "Clientes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -101,6 +122,11 @@ namespace ProyectoGym.Migrations
                 column: "RutinaId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Pagos_ClienteId",
+                table: "Pagos",
+                column: "ClienteId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Rutinas_ClienteId",
                 table: "Rutinas",
                 column: "ClienteId");
@@ -114,6 +140,9 @@ namespace ProyectoGym.Migrations
 
             migrationBuilder.DropTable(
                 name: "Entrenadores");
+
+            migrationBuilder.DropTable(
+                name: "Pagos");
 
             migrationBuilder.DropTable(
                 name: "Rutinas");

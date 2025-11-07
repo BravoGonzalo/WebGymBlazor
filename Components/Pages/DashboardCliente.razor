@@ -11,8 +11,29 @@
 }
 else
 {
-    <h3 class="mb-3">Mi Panel de Rutinas</h3>
+    <h3 class="mb-3">Mi Panel</h3>
     <h5 class="text-muted mb-4">¡Bienvenido, @cliente.nombre @cliente.apellido!</h5>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header">
+            <strong>Estado de Cuenta</strong>
+        </div>
+        <div class="card-body">
+            @if (cliente.EstaAlDia)
+            {
+                <div class="alert alert-success mb-0">
+                    ¡Estás al día! Gracias por tu pago.
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-danger mb-0">
+                    Tu pago está pendiente. Por favor, acércate a recepción para regularizarlo.
+                </div>
+            }
+        </div>
+    </div>
+    <h4 class="mt-4">Tus Rutinas Semanales</h4>
 
     <div class="list-group shadow-sm">
 
@@ -73,11 +94,11 @@ else
     {
         if (diaAbierto == dia)
         {
-            diaAbierto = null;
+            diaAbierto = null; 
         }
         else
         {
-            diaAbierto = dia;
+            diaAbierto = dia; 
         }
     }
 

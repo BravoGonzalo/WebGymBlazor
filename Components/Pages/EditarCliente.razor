@@ -1,11 +1,10 @@
 ﻿@page "/editar-cliente/{ClienteId:int}/{dniEntrenador}"
-@layout Layout.EmptyLayout
 @rendermode InteractiveServer
 @using ProyectoGym.Domain
 @using System.ComponentModel.DataAnnotations
 @inject NavigationManager Navigation
 @inject ProyectoGym.Business.ClienteService ClienteService
-@using ProyectoGym.Business 
+@using ProyectoGym.Business
 
 <h3>Editar Cliente</h3>
 
@@ -19,13 +18,46 @@ else
         <EditForm Model="@editModel" OnValidSubmit="GuardarCambios">
             <DataAnnotationsValidator />
 
-            <div class="mb-3">
-                <label>Nombre</label>
-                <InputText @bind-Value="cliente.nombre" class="form-control" />
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label>Nombre</label>
+                    <InputText @bind-Value="cliente.nombre" class="form-control" />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label>Apellido</label>
+                    <InputText @bind-Value="cliente.apellido" class="form-control" />
+                </div>
             </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label>Email</label>
+                    <InputText @bind-Value="cliente.email" class="form-control" />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label>DNI</label>
+                    <InputText @bind-Value="cliente.dni" class="form-control" disabled />
+                </div>
+            </div>
+
             <div class="mb-3">
-                <label>Apellido</label>
-                <InputText @bind-Value="cliente.apellido" class="form-control" />
+                <label>Dirección</label>
+                <InputText @bind-Value="cliente.direccion" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label>Teléfono</label>
+                <InputText @bind-Value="cliente.telefono" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label>Género</label>
+                <InputSelect @bind-Value="cliente.genero" class="form-control">
+                    @foreach (var genero in Enum.GetValues(typeof(Sexo)))
+                    {
+                        <option value="@genero">@genero</option>
+                    }
+                </InputSelect>
             </div>
             <hr />
             <h5 class="text-muted">Restablecer Contraseña</h5>
@@ -59,8 +91,8 @@ else
     [Parameter] public int ClienteId { get; set; }
     [Parameter] public string dniEntrenador { get; set; } = string.Empty;
 
-    private Cliente? cliente; 
-    private EditModel editModel = new(); 
+    private Cliente? cliente;
+    private EditModel editModel = new();
     private string errorMessage = string.Empty;
 
     public class EditModel
@@ -90,6 +122,7 @@ else
             {
                 cliente.contraseña = ContraseñaHasher.HashPassword(editModel.NuevaContraseña);
             }
+
             ClienteService.ModificarCliente(cliente);
 
             Navigation.NavigateTo($"/dashboard-entrenador/{dniEntrenador}");

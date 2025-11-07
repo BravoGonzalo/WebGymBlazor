@@ -21,6 +21,8 @@ builder.Services.AddScoped<RutinaRepository>();
 builder.Services.AddScoped<RutinaService>();
 builder.Services.AddScoped<EjercicioRepository>();
 builder.Services.AddScoped<EjercicioService>();
+builder.Services.AddScoped<PagoRepository>();
+builder.Services.AddScoped<PagoService>();
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())

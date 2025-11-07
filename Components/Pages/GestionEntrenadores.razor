@@ -1,0 +1,100 @@
+﻿@page "/gestion-entrenadores/{DniEntrenador}"
+@rendermode InteractiveServer
+@inject ProyectoGym.Business.EntrenadorService EntrenadorService
+@inject NavigationManager Navigation
+@using ProyectoGym.Domain
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0">Gestión de Entrenadores</h3>
+    <button class="btn btn-outline-secondary" @onclick="Volver">
+        ← Volver a Mi Panel
+    </button>
+</div>
+
+<p>Aquí puedes ver, editar y eliminar a los entrenadores registrados en el sistema.</p>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+
+        @if (entrenadores.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Apellido</th>
+                            <th>DNI</th>
+                            <th>Email</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var entrenador in entrenadores)
+                        {
+                            <tr>
+                                <td>@entrenador.nombre</td>
+                                <td>@entrenador.apellido</td>
+                                <td>@entrenador.dni</td>
+                                <td>@entrenador.email</td>
+                                <td>
+                                    <button class="btn btn-warning btn-sm me-2" @onclick="() => EditarEntrenador(entrenador.Id)">
+                                        Editar
+                                    </button>
+
+                                    <button class="btn btn-danger btn-sm" @onclick="() => EliminarEntrenador(entrenador.Id)">
+                                        Eliminar
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <p class="text-center">No hay entrenadores registrados.</p>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public string DniEntrenador { get; set; } = string.Empty;
+
+    private List<Entrenador> entrenadores = new();
+
+    protected override void OnInitialized()
+    {
+        CargarEntrenadores();
+    }
+
+    private void CargarEntrenadores()
+    {
+        entrenadores = EntrenadorService.TraerTodos();
+    }
+
+    private void EditarEntrenador(int entrenadorId)
+    {
+        Navigation.NavigateTo($"/editar-entrenador/{entrenadorId}/{DniEntrenador}");
+    }
+
+    private void EliminarEntrenador(int entrenadorId)
+    {
+        try
+        {
+            EntrenadorService.EliminarEntrenador(entrenadorId);
+            CargarEntrenadores();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al eliminar entrenador: {ex.Message}");
+        }
+    }
+
+    private void Volver()
+    {
+        Navigation.NavigateTo($"/dashboard-entrenador/{DniEntrenador}");
+    }
+}

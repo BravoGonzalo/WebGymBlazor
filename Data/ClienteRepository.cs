@@ -46,14 +46,16 @@ namespace ProyectoGym.Data
         public Cliente? GetById(int id)
         {
             return _context.Clientes
-                           .Include(c => c.Rutinas)  
+                           .Include(c => c.Rutinas)
                                .ThenInclude(r => r.Ejercicios)
+                           .Include(c => c.Pagos)
                            .FirstOrDefault(c => c.Id == id);
         }
 
         public List<Cliente> FindByEntrenadorId(int entrenadorId)
         {
             return _context.Clientes
+                           .Include(c => c.Pagos)
                            .Where(c => c.IdEntrenador == entrenadorId)
                            .ToList();
         }
@@ -62,6 +64,7 @@ namespace ProyectoGym.Data
             return _context.Clientes
                            .Include(c => c.Rutinas)
                                .ThenInclude(r => r.Ejercicios)
+                           .Include(c => c.Pagos) 
                            .FirstOrDefault(c => c.dni == dni);
         }
     }
