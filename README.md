@@ -1,0 +1,1 @@
+Sistema de gestión para gimnasios desarrollado en .NET y Blazor. Permite administrar socios, membresías y controlar el estado de los pagos. Proyecto demostrativo de arquitectura en capas y uso de Entity Framework.
